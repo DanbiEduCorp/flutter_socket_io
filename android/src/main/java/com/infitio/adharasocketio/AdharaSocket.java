@@ -53,7 +53,7 @@ class AdharaSocket implements MethodCallHandler {
     }
 
     @Override
-    public void onMethodCall(MethodCall call, Result result) {
+    public void onMethodCall(MethodCall call, final Result result) {
         switch (call.method) {
             case "connect": {
                 log("Connecting....");
@@ -102,11 +102,15 @@ class AdharaSocket implements MethodCallHandler {
             case "emit": {
                 final String eventName = call.argument("eventName");
                 final JSONObject data = new JSONObject((HashMap)call.argument("arguments"));
-                log("emitting:::"+data+":::to:::"+eventName);
+                log(eventName + "::" + data);
                 socket.emit(eventName, data,  new Ack() {
                     @Override
                     public void call(Object... args) {
-                        result.success(args[0]);
+                        if(args.length > 0) {
+                            result.success(args[args.length - 1]);
+                        } else {
+                            result.success(null);
+                        }
                     }
                 });
                 break;
