@@ -105,12 +105,18 @@ class AdharaSocket implements MethodCallHandler {
                 log(eventName + "::" + data);
                 socket.emit(eventName, data,  new Ack() {
                     @Override
-                    public void call(Object... args) {
-                        if(args.length > 0) {
-                            result.success(args[args.length - 1]);
-                        } else {
-                            result.success(null);
-                        }
+                    public void call(final Object... args) {
+                        final Handler handler = new Handler(Looper.getMainLooper());
+                        handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                if(args.length > 0) {
+                                    result.success(args[args.length - 1]);
+                                } else {
+                                    result.success(null);
+                                }
+                            }
+                        });
                     }
                 });
                 break;
