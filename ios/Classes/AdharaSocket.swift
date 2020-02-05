@@ -27,7 +27,7 @@ public class AdharaSocket: NSObject, FlutterPlugin {
     }
 
     public init(_ channel:FlutterMethodChannel, _ config:AdharaSocketIOClientConfig) {
-        manager = SocketManager(socketURL: URL(string: config.uri)!, config: [.log(true), .connectParams(config.query)])
+        manager = SocketManager(socketURL: URL(string: config.uri)!, config: [.log(true), .connectParams(config.query), .forceWebsockets(true)])
         socket = manager.defaultSocket
         self.channel = channel
         self.config = config
@@ -50,6 +50,9 @@ public class AdharaSocket: NSObject, FlutterPlugin {
         }
         switch call.method{
             case "connect":
+                socket.on(clientEvent: .connect) {data, ack in
+                    print("socket connected")
+                }
                 socket.connect()
                 self.log("connecting... on swift")
                 result(nil)
@@ -75,16 +78,19 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 result(nil)
             case "emit":
                 let eventName: String = arguments["eventName"] as! String
-                let data: [Any] = arguments["arguments"] as! [Any]
-                self.log("emitting:::", data, ":::to:::", eventName);
-                socket.emitWithAck(eventName, with: data)
-                    .timingOut(after: 0, callback: {args in
-                        if(eventName == "message" && args.count > 0) {
-                            result(args[args.count - 1]);
-                        } else {
-                            result(nil)
-                        }
-                    })
+                let data: [String:AnyObject] = arguments["arguments"] as! [String: AnyObject]
+                self.log("emitting:::", data, ":::to:::", eventName, data);
+                
+                socket.emit(eventName, data) 
+                result(nil)
+//                socket.emitWithAck(eventName, data)
+//                    .timingOut(after: 0, callback: {args in
+//                        if(eventName == "message" && args.count > 0) {
+//                            result(args[args.count - 1]);
+//                        } else {
+//                            result(nil)
+//                        }
+//                    })
             case "isConnected":
                 self.log("connected")
                 result(socket.status == .connected)
