@@ -28,7 +28,8 @@ public class AdharaSocket: NSObject, FlutterPlugin {
 
     public init(_ channel:FlutterMethodChannel, _ config:AdharaSocketIOClientConfig) {
         manager = SocketManager(socketURL: URL(string: config.uri)!, config: [.log(true), .connectParams(config.query), .forceWebsockets(true)])
-        socket = manager.defaultSocket
+//        socket = manager.defaultSocket
+        socket = manager.socket(forNamespace: "/users")
         self.channel = channel
         self.config = config
     }
@@ -51,7 +52,7 @@ public class AdharaSocket: NSObject, FlutterPlugin {
         switch call.method{
             case "connect":
                 socket.on(clientEvent: .connect) {data, ack in
-                    print("socket connected")
+                    self.log("socket connected")
                 }
                 socket.connect()
                 self.log("connecting... on swift")
@@ -60,11 +61,12 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 let eventName: String = arguments["eventName"] as! String
                 self.log("registering event:::", eventName)
                 socket.on(eventName) {data, ack in
-                    self.log("incoming:::", eventName, data, ack)
-                    var list = [String]()
+                    self.log("Socket.swift::incoming:::", eventName, data, ack)
+                    var list = [Any]()
                     for item in data {
-                        list.append(item as! String)
+                        list.append(item)
                     }
+                    self.log("Socket.swift::incoming2:::", eventName, list)
                     self.channel.invokeMethod("incoming", arguments: [
                         "eventName": eventName,
                         "args": list
@@ -81,16 +83,16 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 let data: [String:AnyObject] = arguments["arguments"] as! [String: AnyObject]
                 self.log("emitting:::", data, ":::to:::", eventName, data);
                 
-                socket.emit(eventName, data) 
-                result(nil)
-//                socket.emitWithAck(eventName, data)
-//                    .timingOut(after: 0, callback: {args in
-//                        if(eventName == "message" && args.count > 0) {
-//                            result(args[args.count - 1]);
-//                        } else {
-//                            result(nil)
-//                        }
-//                    })
+//                socket.emit(eventName, data) 
+//                result(nil)
+                socket.emitWithAck(eventName, data)
+                    .timingOut(after: 0, callback: {args in
+                        if(eventName == "message" && args.count > 0) {
+                            result(args[args.count - 1]);
+                        } else {
+                            result(nil)
+                        }
+                    })
             case "isConnected":
                 self.log("connected")
                 result(socket.status == .connected)
