@@ -62,14 +62,14 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 self.log("registering event:::", eventName)
                 socket.on(eventName) {data, ack in
                     self.log("Socket.swift::incoming:::", eventName, data, ack)
-//                    var list = [Any]()
-//                    for item in data {
-//                        list.append(item)
-//                    }
-//                    self.log("Socket.swift::incoming2:::", eventName, list)
+                    var list = [Any]()
+                    for item in data {
+                        list.append(item)
+                    }
+                    self.log("Socket.swift::incoming2:::", eventName, list)
                     self.channel.invokeMethod("incoming", arguments: [
                         "eventName": eventName,
-//                        "args": list
+                        "args": list
                     ]);
                 }
                 result(nil)
