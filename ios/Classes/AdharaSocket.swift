@@ -62,14 +62,14 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 self.log("registering event:::", eventName)
                 socket.on(eventName) {data, ack in
                     self.log("Socket.swift::incoming:::", eventName, data, ack)
-                    var list = [Any]()
-                    for item in data {
-                        list.append(item)
-                    }
-                    self.log("Socket.swift::incoming2:::", eventName, list)
+//                    var list = [Any]()
+//                    for item in data {
+//                        list.append(item)
+//                    }
+//                    self.log("Socket.swift::incoming2:::", eventName, list)
                     self.channel.invokeMethod("incoming", arguments: [
                         "eventName": eventName,
-                        "args": list
+//                        "args": list
                     ]);
                 }
                 result(nil)
@@ -83,7 +83,7 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 let data: [String:AnyObject] = arguments["arguments"] as! [String: AnyObject]
                 self.log("emitting:::", data, ":::to:::", eventName, data);
                 
-//                socket.emit(eventName, data) 
+//                socket.emit(eventName, data)
 //                result(nil)
                 socket.emitWithAck(eventName, data)
                     .timingOut(after: 0, callback: {args in
