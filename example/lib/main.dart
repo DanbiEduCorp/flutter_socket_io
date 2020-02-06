@@ -44,7 +44,7 @@ class _MyAppState extends State<MyApp> {
 
     socket.onConnect((data) {
       pprint("connected...");
-      pprint(data);
+      pprint("data::" + data);
       sendMessage();
     });
     socket.onConnectError(pprint);
@@ -56,11 +56,20 @@ class _MyAppState extends State<MyApp> {
       pprint(data);
     });
     socket.on('message', (dynamic data) {
-      pprint('=============>onMessage::' + data);
+      pprint('=============>onMessage::' + data.runtimeType.toString());
     });
     socket.on('info', (dynamic data) {
-      pprint('=============>recv info::' + data);
+//      pprint('=============>recv info::' + data);
+      pprint('=============>recv info::' + data.runtimeType.toString());
     });
+    socket.on('rtcstunservers', (dynamic data) {
+      pprint('=============>recv rtcstunservers::' + data.runtimeType.toString());
+    });
+
+    socket.on('rtcturnservers', (dynamic data) {
+      pprint('=============>recv rtcturnservers::' + data.runtimeType.toString());
+    });
+
     socket.connect();
     pprint("connecting...");
   }
@@ -104,6 +113,8 @@ class _MyAppState extends State<MyApp> {
         'type': 'answer', 'to': 8402, 'from': 111, 'test': 'test'
       });
       pprint("Message emitted...STEP03");
+
+      await socket.emit('rtcjoin', '68_72972');
     }
   }
 
