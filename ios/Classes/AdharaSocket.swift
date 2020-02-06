@@ -93,6 +93,7 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 } else {
                     self.log("emitting:::String", ":::to:::", eventName);
                     socket.emit(eventName, arguments["arguments"] as! String)
+                    result(nil)
                 }
             case "isConnected":
                 self.log("connected")

@@ -115,6 +115,8 @@ class _MyAppState extends State<MyApp> {
       pprint("Message emitted...STEP03");
 
       await socket.emit('rtcjoin', '68_72972');
+
+      pprint("Message emitted...STEP04");
     }
   }
 
