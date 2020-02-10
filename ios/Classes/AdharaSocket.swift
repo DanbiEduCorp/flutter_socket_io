@@ -62,9 +62,19 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                 self.log("registering event:::", eventName)
                 socket.on(eventName) {data, ack in
                     self.log("Socket.swift::incoming:::", eventName, data, ack)
-                    var list = [Any]()
+                    var list = [String]()
                     for item in data {
-                        list.append(item)
+                        if let str:String = item as? String {
+                            list.append(str)
+                        } else {
+                            do {
+                                let json =  try JSONSerialization.data(withJSONObject: item, options: JSONSerialization.WritingOptions.prettyPrinted) // first of all convert json to the data
+                                list.append(String(data: json, encoding: String.Encoding.utf8) ?? "")
+                            } catch let error {
+                                print(error)
+                            }
+//                            list.append(String(describing: item))
+                        }
                     }
                     self.log("Socket.swift::incoming2:::", eventName, list)
                     self.channel.invokeMethod("incoming", arguments: [
