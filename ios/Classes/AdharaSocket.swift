@@ -68,12 +68,11 @@ public class AdharaSocket: NSObject, FlutterPlugin {
                             list.append(str)
                         } else {
                             do {
-                                let json =  try JSONSerialization.data(withJSONObject: item, options: JSONSerialization.WritingOptions.prettyPrinted) // first of all convert json to the data
+                                let json =  try JSONSerialization.data(withJSONObject: item)
                                 list.append(String(data: json, encoding: String.Encoding.utf8) ?? "")
                             } catch let error {
                                 print(error)
                             }
-//                            list.append(String(describing: item))
                         }
                     }
                     self.log("Socket.swift::incoming2:::", eventName, list)
