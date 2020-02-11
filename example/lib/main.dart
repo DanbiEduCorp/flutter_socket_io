@@ -4,7 +4,7 @@ import 'package:adhara_socket_io/adhara_socket_io.dart';
 
 void main() => runApp(MyApp());
 
-const String URI = "http://192.168.1.5:7000/";
+const String URI = "https://msg.danbi.biz/users";
 
 class MyApp extends StatefulWidget {
   @override
@@ -26,22 +26,25 @@ class _MyAppState extends State<MyApp> {
 
   initSocket() async {
     setState(() => isProbablyConnected = true);
-    socket = await manager.createInstance(SocketOptions(
-        //Socket IO server URI
+    SocketOptions options = SocketOptions(
+      //Socket IO server URI
         URI,
         //Query params - can be used for authentication
-        query: {
-          "auth": "--SOME AUTH STRING---",
-          "info": "new connection from adhara-socketio",
-          "timestamp": DateTime.now().toString()
-        },
+//        query: {
+//          "auth": "--SOME AUTH STRING---",
+//          "info": "new connection from adhara-socketio",
+//          "timestamp": DateTime.now().toString()
+//        },
         //Enable or disable platform channel logging
-        enableLogging: false,
-        transports: [Transports.WEB_SOCKET, Transports.POLLING] //Enable required transport
-    ));
+        enableLogging: true,
+        transports: [Transports.WEB_SOCKET] //Enable required transport
+    );
+    options.timeout = 2000;
+    socket = await manager.createInstance(options);
+
     socket.onConnect((data) {
       pprint("connected...");
-      pprint(data);
+      pprint("data::" + data);
       sendMessage();
     });
     socket.onConnectError(pprint);
@@ -52,7 +55,23 @@ class _MyAppState extends State<MyApp> {
       pprint("news");
       pprint(data);
     });
+    socket.on('message', (dynamic data) {
+      pprint('=============>onMessage::' + data.runtimeType.toString());
+    });
+    socket.on('info', (dynamic data) {
+//      pprint('=============>recv info::' + data);
+      pprint('=============>recv info::' + data.runtimeType.toString());
+    });
+    socket.on('rtcstunservers', (dynamic data) {
+      pprint('=============>recv rtcstunservers::' + data.runtimeType.toString());
+    });
+
+    socket.on('rtcturnservers', (dynamic data) {
+      pprint('=============>recv rtcturnservers::' + data.runtimeType.toString());
+    });
+
     socket.connect();
+    pprint("connecting...");
   }
 
   disconnect() async {
@@ -60,32 +79,44 @@ class _MyAppState extends State<MyApp> {
     setState(() => isProbablyConnected = false);
   }
 
-  sendMessage() {
+  sendMessage() async {
     if (socket != null) {
       pprint("sending message...");
-      socket.emit("message", [
-        "Hello world!",
-        1908,
-        {
-          "wonder": "Woman",
-          "comics": ["DC", "Marvel"]
-        },
-        {
-          "test": "=!./"
-        },
-        [
-          "I'm glad",
-          2019,
-          {
-            "come back": "Tony",
-            "adhara means": ["base", "foundation"]
-          },
-          {
-            "test": "=!./"
-          },
-        ]
-      ]);
-      pprint("Message emitted...");
+      socket.emit('login', {'authToken': '*danbi*', 'actorId': 111});
+      pprint("Message emitted...STEP01");
+      socket.emit('usePlugin', {'id': 'rtc'});
+//      socket.emit("message", [
+//        "Hello world!",
+//        1908,
+//        {
+//          "wonder": "Woman",
+//          "comics": ["DC", "Marvel"]
+//        },
+//        {
+//          "test": "=!./"
+//        },
+//        [
+//          "I'm glad",
+//          2019,
+//          {
+//            "come back": "Tony",
+//            "adhara means": ["base", "foundation"]
+//          },
+//          {
+//            "test": "=!./"
+//          },
+//        ]
+//      ]);
+      pprint("Message emitted...STEP02-1");
+
+      await socket.emit('message', {
+        'type': 'answer', 'to': 8402, 'from': 111, 'test': 'test'
+      });
+      pprint("Message emitted...STEP03");
+
+      await socket.emit('rtcjoin', '68_72972');
+
+      pprint("Message emitted...STEP04");
     }
   }
 
